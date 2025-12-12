@@ -93,6 +93,41 @@
   :set #'quick-weather--validate-hour
   :group 'quick-weather)
 
+(defcustom quick-weather-time-windows nil
+  "List of time windows to highlight in weather forecast.
+Each element is a list of (LABEL START-HOUR END-HOUR FACE).
+LABEL is a string to display (e.g., \"LUNCH\", \"COMMUTE\").
+START-HOUR and END-HOUR are integers (0-23).
+FACE is a face symbol for highlighting (e.g., success, warning, error).
+
+Example:
+  (setq quick-weather-time-windows
+    \\='((\"LUNCH\"    12 14 success)
+      (\"COMMUTE\"  17 19 warning)))
+
+If nil, uses the default lunch and commute hours from the
+individual quick-weather-*-hour variables for backward compatibility."
+  :type '(repeat (list (string :tag "Label")
+                      (integer :tag "Start Hour (0-23)")
+                      (integer :tag "End Hour (0-23)")
+                      (symbol :tag "Face")))
+  :group 'quick-weather)
+
+(defun quick-weather--get-time-windows ()
+  "Get time windows to display.
+If `quick-weather-time-windows' is set, use it.
+Otherwise, fall back to individual lunch/commute variables for
+backward compatibility."
+  (or quick-weather-time-windows
+      (list (list "LUNCH"
+                  quick-weather-lunch-start-hour
+                  quick-weather-lunch-end-hour
+                  'success)
+            (list "COMMUTE"
+                  quick-weather-commute-start-hour
+                  quick-weather-commute-end-hour
+                  'warning))))
+
 (defconst quick-weather--buffer-name "*Quick-Weather*"
   "Name of buffer used to display weather forecasts.")
 
@@ -288,22 +323,21 @@ Highlights lunch and commute hours."
          (temp-min (apply #'min temps))
          (temp-max (apply #'max temps))
          (precipitation-max (apply #'max precipitation-probabilities))
-         (lunch-data (quick-weather--time-window-data hourly-data
-                                                     quick-weather-lunch-start-hour
-                                                     quick-weather-lunch-end-hour))
-         (lunch-indices (mapcar (lambda (pair) (cons (car pair) 'success)) (car lunch-data)))
-         (lunch-weather (cadr lunch-data))
-         (commute-data (quick-weather--time-window-data hourly-data
-                                                       quick-weather-commute-start-hour
-                                                       quick-weather-commute-end-hour))
-         (commute-indices (mapcar (lambda (pair) (cons (car pair) 'warning)) (car commute-data)))
-         (commute-weather (cadr commute-data))
-         (highlights (append lunch-indices commute-indices))
-         ;; Use worst weather (highest WMO code) for each time window
-         (lunch-code (when lunch-weather (apply #'max lunch-weather)))
-         (commute-code (when commute-weather (apply #'max commute-weather)))
-         (lunch-info (when lunch-code (quick-weather--wmo-code-info lunch-code)))
-         (commute-info (when commute-code (quick-weather--wmo-code-info commute-code)))
+         (time-windows (quick-weather--get-time-windows))
+         ;; Process all time windows
+         (windows-data (cl-loop for window in time-windows
+                               for label = (nth 0 window)
+                               for start-hour = (nth 1 window)
+                               for end-hour = (nth 2 window)
+                               for face = (nth 3 window)
+                               for window-data = (quick-weather--time-window-data hourly-data start-hour end-hour)
+                               for indices = (mapcar (lambda (pair) (cons (car pair) face)) (car window-data))
+                               for weather = (cadr window-data)
+                               for code = (when weather (apply #'max weather))
+                               for info = (when code (quick-weather--wmo-code-info code))
+                               collect (list label start-hour end-hour face indices info)))
+         ;; Collect all highlights for sparklines
+         (highlights (apply #'append (mapcar (lambda (w) (nth 4 w)) windows-data)))
          (temp-sparkline (quick-weather--sparkline temps highlights current-hour))
          (precipitation-sparkline (quick-weather--sparkline precipitation-probabilities highlights current-hour))
          (rainy-weather-codes (cl-loop for row in hourly-data
@@ -353,33 +387,29 @@ Highlights lunch and commute hours."
                                           precipitation-sparkline)))
             entries))
     ;; Separator before time windows
-    (when (or lunch-info commute-info)
+    (when (cl-some (lambda (w) (nth 5 w)) windows-data)
       (push (list 'sep2 (vector "" separator))
             entries))
-    ;; Lunch time window
-    (when lunch-info
-      (push (list 'lunch (vector ""
-                                 (concat (propertize "[ " 'face 'font-lock-keyword-face)
-                                         (propertize (format "%02d-%02d LUNCH"
-                                                            quick-weather-lunch-start-hour
-                                                            quick-weather-lunch-end-hour)
-                                                    'face 'success)
-                                         (propertize " ]" 'face 'font-lock-keyword-face)
-                                         " "
-                                         (format "%s %s" (car lunch-info) (cadr lunch-info)))))
-            entries))
-    ;; Commute time window
-    (when commute-info
-      (push (list 'commute (vector ""
-                                   (concat (propertize "[ " 'face 'font-lock-keyword-face)
-                                           (propertize (format "%02d-%02d COMMUTE"
-                                                              quick-weather-commute-start-hour
-                                                              quick-weather-commute-end-hour)
-                                                      'face 'warning)
-                                           (propertize " ]" 'face 'font-lock-keyword-face)
-                                           " "
-                                           (format "%s %s" (car commute-info) (cadr commute-info)))))
-            entries))
+    ;; Time windows (lunch, commute, etc.)
+    (cl-loop for window in windows-data
+            for label = (nth 0 window)
+            for start-hour = (nth 1 window)
+            for end-hour = (nth 2 window)
+            for face = (nth 3 window)
+            for info = (nth 5 window)
+            when info
+            do (push (list (intern (downcase label))
+                          (vector ""
+                                  (concat (propertize "[ " 'face 'font-lock-keyword-face)
+                                          (propertize (format "%02d-%02d %s"
+                                                             start-hour
+                                                             end-hour
+                                                             label)
+                                                     'face face)
+                                          (propertize " ]" 'face 'font-lock-keyword-face)
+                                          " "
+                                          (format "%s %s" (car info) (cadr info)))))
+                    entries))
     ;; Bottom padding
     (push (list 'bottom-space (vector "" ""))
           entries)
