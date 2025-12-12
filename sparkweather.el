@@ -341,9 +341,6 @@ Highlights lunch and commute hours."
       (setq tabulated-list-entries (nreverse entries)
             tabulated-list-use-header-line nil)
       (tabulated-list-print t)
-      (let ((inhibit-read-only t))
-        (goto-char (point-max))
-        (insert "\n" (format-time-string "%A %F %R")))
       (goto-char (point-min))
       (display-buffer (current-buffer)))))
 
