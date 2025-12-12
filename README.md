@@ -6,6 +6,8 @@
 
 Quick weather forecasts with sparklines for Emacs, using data from [Open-Meteo](https://open-meteo.com).
 
+![Screenshot](screenshot.png)
+
 ## Installation
 
 ```elisp
