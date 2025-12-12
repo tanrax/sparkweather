@@ -10,7 +10,7 @@ Quick weather forecasts with sparklines for Emacs, using data from [Open-Meteo](
 
 ```elisp
 (use-package quick-weather
-  :ensure t
+  :vc (:url "https://github.com/tanrax/quick-weather.el")
   :after calendar
   :config
   (setq calendar-latitude 39.46975   ; Valencia, Spain
