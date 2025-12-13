@@ -371,6 +371,9 @@ Highlights configured time markers."
                                          " "
                                          (cadr current-weather-info))))
           entries)
+    ;; Blank line after NOW
+    (push (list 'blank1 (vector "" ""))
+          entries)
     ;; Separator
     (push (list 'sep1 (vector "" separator))
           entries)
@@ -401,6 +404,9 @@ Highlights configured time markers."
                                           " "
                                           precipitation-sparkline)))
             entries))
+    ;; Blank line after precipitation
+    (push (list 'blank2 (vector "" ""))
+          entries)
     ;; Separator before time markers
     (when (cl-some (lambda (w) (nth 4 w)) windows-data)
       (push (list 'sep2 (vector "" separator))
