@@ -28,7 +28,10 @@ Quick weather forecasts with sparklines for Emacs, using data from [Open-Meteo](
   :after calendar
   :config
   (setq calendar-latitude 39.46975   ; Valencia, Spain
-        calendar-longitude -0.37739))
+        calendar-longitude -0.37739)
+  (setq quick-weather-time-windows
+    '(("🍽️" 13 success)
+      ("🚌" 17 warning))))
 ```
 
 ## Configuration
