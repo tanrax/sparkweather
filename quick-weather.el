@@ -406,7 +406,7 @@ Highlights configured time markers."
       (push (list 'sep2 (vector "" separator))
             entries)
       ;; Markers header
-      (push (list 'markers-header (vector "" (concat (make-string 47 ?\s)
+      (push (list 'markers-header (vector "" (concat (make-string 48 ?\s)
                                                       (propertize "MARKERS" 'face 'font-lock-keyword-face))))
             entries))
     ;; Time markers (lunch, commute, etc.)
