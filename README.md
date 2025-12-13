@@ -2,7 +2,7 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-> **Note:** This is a fork of [aglet/sparkweather](https://github.com/aglet/sparkweather) with a different UI design featuring a minimal brackets style and current weather display.
+> **Note:** Fork of [aglet/sparkweather](https://github.com/aglet/sparkweather). Replaces hour ranges with single-hour markers, adds minimal brackets UI with NOW/FORECAST/MARKERS sections, and supports unlimited customizable time markers.
 
 Quick weather forecasts with sparklines for Emacs, using data from [Open-Meteo](https://open-meteo.com).
 
