@@ -361,17 +361,23 @@ Highlights configured time markers."
     ;; Top padding
     (push (list 'top-space (vector "" ""))
           entries)
+    ;; NOW header
+    (push (list 'now-header (vector "" (concat (make-string 50 ?\s)
+                                               (propertize "NOW" 'face 'font-lock-keyword-face))))
+          entries)
     ;; Current weather
     (push (list 'current (vector ""
-                                 (concat (propertize "[ NOW ]" 'face 'font-lock-keyword-face)
+                                 (concat (propertize "[" 'face 'font-lock-keyword-face)
                                          " "
                                          (propertize (format "%d°C" (round current-temp)) 'face 'bold)
-                                         " - "
+                                         " "
+                                         (propertize "]" 'face 'font-lock-keyword-face)
+                                         "  "
                                          (car current-weather-info)
                                          " "
                                          (cadr current-weather-info))))
           entries)
-    ;; Blank line after NOW
+    ;; Blank line after current weather
     (push (list 'blank1 (vector "" ""))
           entries)
     ;; Separator

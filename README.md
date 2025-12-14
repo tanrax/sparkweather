@@ -7,8 +7,8 @@
 Quick weather forecasts with sparklines for Emacs, using data from [Open-Meteo](https://open-meteo.com).
 
 ```
-[ NOW ] 18°C - ☀ mainly clear
-
+                                                  NOW
+[ 18°C ]  ☀ mainly clear
 ───────────────────────────────────────────────────────
                                              FORECAST
 [ 14—22°C ] ▂▂▃▃▄▅▅▆▇ ▇▇██▇▆▅▄▃▂▂▂▁▁▁
